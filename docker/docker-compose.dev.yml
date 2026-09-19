@@ -1,0 +1,28 @@
+name: udesa-x-api-gateway
+
+services:
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: production
+    ports:
+      # 8000 and 8001 are already users-api's and posts-api's own host ports
+      # in their docker-compose.dev.yml.
+      - '8002:8000'
+    environment:
+      # No backing database or cache: this service only forwards requests.
+      # Defaults match users-api (host 8000) and posts-api (host 8001) run
+      # with their own docker-compose.dev.yml on the same machine.
+      USERS_API_URL: http://host.docker.internal:8000
+      POSTS_API_URL: http://host.docker.internal:8001
+
+  # No source volume on purpose: mounting it would replace what the image
+  # carries and stop testing the real artifact.
+  tests:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: test
+    # Without this it would start on every `docker compose up`.
+    profiles: ['test']
