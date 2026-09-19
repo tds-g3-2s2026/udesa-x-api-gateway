@@ -1,0 +1,14 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  ci:
+    uses: tds-g3-2s2026/udesa-x-platform/.github/workflows/ci-node.yml@main
+    secrets: inherit
+    with:
+      # This service deploys a container, so the image gets built and checked.
+      verificar-imagen: true
+      puerto-imagen: 8000
+      ruta-verificacion: /healthcheck
