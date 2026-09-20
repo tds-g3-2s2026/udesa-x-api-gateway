@@ -37,7 +37,7 @@ dependencia porque no tiene ninguna propia.
 | Prefijo                              | Va a        |
 | ------------------------------------ | ----------- |
 | `/api/auth`, `/api/me`, `/api/admin` | `users-api` |
-| `/api/users`                         | `posts-api` |
+| `/api/users`, `/api/follow-requests` | `posts-api` |
 
 Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
 el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva

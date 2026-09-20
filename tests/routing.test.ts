@@ -25,6 +25,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/users/42', config)).toBe('http://posts-api:8000');
   });
 
+  it('routes follow requests and their actions to posts-api', () => {
+    expect(resolveBackend('/api/follow-requests', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/follow-requests/42/approve', config)).toBe(config.postsApiUrl);
+  });
+
   it('returns undefined for an unmatched path', () => {
     expect(resolveBackend('/api/unknown', config)).toBeUndefined();
   });

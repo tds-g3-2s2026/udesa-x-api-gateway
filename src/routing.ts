@@ -6,6 +6,7 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/me', 'usersApiUrl'],
   ['/api/admin', 'usersApiUrl'],
   ['/api/users', 'postsApiUrl'],
+  ['/api/follow-requests', 'postsApiUrl'],
 ];
 
 /** Returns the backend base URL for a request path, or undefined if unmatched. */
