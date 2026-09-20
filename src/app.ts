@@ -12,6 +12,8 @@ export function createApp() {
     return c.json({ status: 'ok' });
   });
 
+  app.get('/livez', (c) => c.json({ status: 'ok' }));
+
   app.all('/api/*', async (c) => {
     const config = loadConfig();
     const backendUrl = resolveBackend(c.req.path, config);
@@ -19,7 +21,7 @@ export function createApp() {
       return c.text('no route configured for this path', 404);
     }
 
-    const upstream = await proxy(`${backendUrl}${c.req.path}`, {
+    const upstream = await proxy(`${backendUrl}${c.req.path}${new URL(c.req.url).search}`, {
       ...c.req,
       headers: {
         ...c.req.header(),
