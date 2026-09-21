@@ -11,7 +11,7 @@ Nace de la issue [`#48`](https://github.com/tds-g3-2s2026/udesa-x-platform/issue
 `udesa-x-platform`: no corresponde a ninguna historia de usuario del catálogo de la consigna, es
 infraestructura interna detrás del `Ingress` compartido del cluster. Va en TypeScript y no en
 Python (como `users-api`/`posts-api`) porque la consigna exige que el backend no esté en una
-única tecnología, y este es el servicio con menos costo para cumplirlo ya — ver la discusión en
+única tecnología, y este es el servicio con menos costo para cumplirlo ya - ver la discusión en
 `#48`.
 
 ## Levantarlo en desarrollo
@@ -23,7 +23,7 @@ docker compose -f docker/docker-compose.dev.yml up --build
 Requiere `USERS_API_URL` y `POSTS_API_URL` apuntando a donde estén corriendo esos dos servicios.
 Por default asume que corren en el host con sus propios `docker-compose.dev.yml`
 (`users-api` en `8000`, `posts-api` en `8001`); este servicio usa `8002`. Sin esas dos variables,
-cualquier request a `/api/*` responde con error — `/healthcheck` no las necesita.
+cualquier request a `/api/*` responde con error - `/healthcheck` y `/livez` no las necesitan.
 
 ```bash
 curl http://localhost:8002/healthcheck
@@ -37,11 +37,11 @@ dependencia porque no tiene ninguna propia.
 | Prefijo                              | Va a        |
 | ------------------------------------ | ----------- |
 | `/api/auth`, `/api/me`, `/api/admin` | `users-api` |
-| `/api/users`                         | `posts-api` |
+| `/api/users`, `/api/follow-requests` | `posts-api` |
 
-Cualquier otro path bajo `/api` responde `404`. La tabla vive en `src/routing.ts` y tiene que
-mantenerse igual a la de `k8s/ingress.yaml` en `udesa-x-platform` mientras el `Ingress` siga
-ruteando directo a cada servicio en vez de mandar todo `/api` para acá.
+Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
+el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva
+el prefijo `/api`, la query y el encabezado de autorización. Las URLs base no llevan `/api`.
 
 ## Configuración
 
@@ -51,17 +51,46 @@ ruteando directo a cada servicio en vez de mandar todo `/api` para acá.
 | `POSTS_API_URL` | sin definir, obligatoria | Base URL de `posts-api`          |
 | `PORT`          | `8000`                   | Puerto donde escucha el servicio |
 
+## Despliegue en Kubernetes
+
+Los manifiestos de `k8s/` usan `tds-group-3`: Deployment, Service y ConfigMap. No se crea
+un Secret vacío: este servicio no consume credenciales. Nunca versionar un eventual
+`k8s/secret.yaml` real.
+
+- El pipeline debe sustituir `${ECR_IMAGE}` por la referencia completa de ECR con tag
+  inmutable o digest. Kubernetes no expande variables. Publicar una imagen no la despliega.
+- El Service expone `80` hacia el puerto nombrado `http` del contenedor (`8000`).
+- `USERS_API_URL=http://users-api` y `POSTS_API_URL=http://posts-api` usan DNS del namespace.
+- Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
+- `maxSurge: 1` y `maxUnavailable: 0` mantienen el pod anterior hasta que el nuevo esté
+  listo. Requiere un slot libre y cuota de CPU/memoria; no garantiza alta disponibilidad.
+- Readiness consulta `/healthcheck`; liveness consulta `/livez`. No verifican las APIs:
+  un gateway sano no demuestra que login o follow funcionen.
+- `envFrom` se lee al crear el contenedor. Cambiar el ConfigMap requiere reemplazar los
+  pods, aunque la imagen sea la misma.
+
+El futuro CD aplica explícitamente ConfigMap, Service y Deployment con imagen resuelta,
+espera `kubectl rollout status deployment/api-gateway -n tds-group-3` y verifica una
+operación de cada API desde el dominio público. No modificar el Ingress desde ese pipeline:
+lo aplica el docente. El gateway debe estar listo antes de habilitar la entrada pública.
+
+Esta PR no implementa CD ni despliega en EKS. Depende del namespace e Ingress de
+[platform#51](https://github.com/tds-g3-2s2026/udesa-x-platform/pull/51), las APIs con rutas
+`/api` y Services en `80`, las imágenes reales y los permisos de la cátedra. Seguimiento:
+[issue #2](https://github.com/tds-g3-2s2026/udesa-x-api-gateway/issues/2).
+
 ## Correr los tests
 
 ```bash
 bun install
-bun run test            # tabla de ruteo y /healthcheck, sin red
+bun run test            # rutas, salud y proxy contra un servidor HTTP local
 bun run test:coverage   # con reporte de cobertura
 ```
 
-Ningún test necesita `users-api` ni `posts-api` corriendo: usan `app.request()`, el helper de
-testing propio de Hono, que ejecuta la app en memoria sin levantar un servidor real. Probar el
-reenvío de punta a punta contra los dos servicios reales queda pendiente.
+Ningún test necesita `users-api` ni `posts-api` corriendo: usan `app.request()`, el helper
+de Hono, y un servidor HTTP efímero en loopback para comprobar el proxy y su query.
+La verificación del release también debe ejercitar login y follow contra las imágenes
+reales de ambas APIs; los tests aislados no sustituyen ese smoke.
 
 ### Como los corre el CI: dentro de la imagen
 

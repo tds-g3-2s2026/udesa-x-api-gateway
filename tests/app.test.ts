@@ -42,18 +42,21 @@ describe('matched /api path', () => {
       res.end(JSON.stringify({ receivedPath: req.url, method: req.method }));
     });
 
-    await new Promise<void>((resolve) => fakeUsersApi.listen(0, resolve));
+    await new Promise<void>((resolve) => fakeUsersApi.listen(0, '127.0.0.1', resolve));
     const { port } = fakeUsersApi.address() as AddressInfo;
 
     try {
-      vi.stubEnv('USERS_API_URL', `http://localhost:${port}`);
+      vi.stubEnv('USERS_API_URL', `http://127.0.0.1:${port}`);
       vi.stubEnv('POSTS_API_URL', 'http://posts-api:8000');
 
       const { app } = await import('../src/app');
-      const res = await app.request('/api/me');
+      const res = await app.request('/api/me?limit=10&cursor=a%2Fb');
 
       expect(res.status).toBe(200);
-      expect(await res.json()).toEqual({ receivedPath: '/api/me', method: 'GET' });
+      expect(await res.json()).toEqual({
+        receivedPath: '/api/me?limit=10&cursor=a%2Fb',
+        method: 'GET',
+      });
     } finally {
       await new Promise<void>((resolve) => fakeUsersApi.close(() => resolve()));
     }
