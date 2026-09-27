@@ -57,8 +57,8 @@ Los manifiestos de `k8s/` usan `tds-group-3`: Deployment, Service y ConfigMap. N
 un Secret vacío: este servicio no consume credenciales. Nunca versionar un eventual
 `k8s/secret.yaml` real.
 
-- El pipeline debe sustituir `${ECR_IMAGE}` por la referencia completa de ECR con tag
-  inmutable o digest. Kubernetes no expande variables. Publicar una imagen no la despliega.
+- El pipeline sustituye `${ECR_IMAGE}` por la imagen publicada en ECR, referenciada por
+  digest. Kubernetes no expande variables.
 - El Service expone `80` hacia el puerto nombrado `http` del contenedor (`8000`).
 - `USERS_API_URL=http://users-api` y `POSTS_API_URL=http://posts-api` usan DNS del namespace.
 - Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
@@ -66,18 +66,15 @@ un Secret vacío: este servicio no consume credenciales. Nunca versionar un even
   listo. Requiere un slot libre y cuota de CPU/memoria; no garantiza alta disponibilidad.
 - Readiness consulta `/healthcheck`; liveness consulta `/livez`. No verifican las APIs:
   un gateway sano no demuestra que login o follow funcionen.
-- `envFrom` se lee al crear el contenedor. Cambiar el ConfigMap requiere reemplazar los
-  pods, aunque la imagen sea la misma.
+- `envFrom` se lee al crear el contenedor. El pipeline pone el hash del ConfigMap en el pod
+  template, así que cambiarlo también reemplaza los pods aunque la imagen sea la misma.
 
-El futuro CD aplica explícitamente ConfigMap, Service y Deployment con imagen resuelta,
-espera `kubectl rollout status deployment/api-gateway -n tds-group-3` y verifica una
-operación de cada API desde el dominio público. No modificar el Ingress desde ese pipeline:
-lo aplica el docente. El gateway debe estar listo antes de habilitar la entrada pública.
-
-Esta PR no implementa CD ni despliega en EKS. Depende del namespace e Ingress de
-[platform#51](https://github.com/tds-g3-2s2026/udesa-x-platform/pull/51), las APIs con rutas
-`/api` y Services en `80`, las imágenes reales y los permisos de la cátedra. Seguimiento:
-[issue #2](https://github.com/tds-g3-2s2026/udesa-x-api-gateway/issues/2).
+Cada push a `main` que pasa el CI despliega solo, con el job `deploy` de
+`.github/workflows/ci.yml`, que llama a `deploy.yml` de `udesa-x-platform`. Aplica
+ConfigMap, Service y Deployment, espera el rollout y, si no converge, vuelve a la versión
+anterior. No toca el Ingress: lo aplica el docente, y el gateway tiene que estar listo antes
+de habilitar la entrada pública. Qué hace paso por paso está en el README de
+`udesa-x-platform`, sección "Despliegue continuo".
 
 ## Correr los tests
 
