@@ -53,7 +53,7 @@ el prefijo `/api`, la query y el encabezado de autorización. Las URLs base no l
 
 ## Despliegue en Kubernetes
 
-Los manifiestos de `k8s/` usan `tds-group-3`: Deployment, Service y ConfigMap. No se crea
+Los manifiestos de `k8s/` usan `tds-group-3`: Deployment, Service, ConfigMap y NetworkPolicy. No se crea
 un Secret vacío: este servicio no consume credenciales. Nunca versionar un eventual
 `k8s/secret.yaml` real.
 
@@ -62,6 +62,9 @@ un Secret vacío: este servicio no consume credenciales. Nunca versionar un even
 - El Service expone `80` hacia el puerto nombrado `http` del contenedor (`8000`).
 - `USERS_API_URL=http://users-api` y `POSTS_API_URL=http://posts-api` usan DNS del namespace.
 - Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
+- La NetworkPolicy le abre el gateway al ALB, desde sus dos subredes. El resto del namespace
+  solo acepta tráfico interno por la política de `udesa-x-platform`. Hoy ninguna de las dos
+  filtra: el cluster tiene la aplicación de NetworkPolicy apagada.
 - `maxSurge: 1` y `maxUnavailable: 0` mantienen el pod anterior hasta que el nuevo esté
   listo. Requiere un slot libre y cuota de CPU/memoria; no garantiza alta disponibilidad.
 - Readiness consulta `/healthcheck`; liveness consulta `/livez`. No verifican las APIs:

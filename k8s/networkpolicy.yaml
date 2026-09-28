@@ -1,0 +1,19 @@
+# Lets the ALB reach the gateway from its two subnets, the ones tagged kubernetes.io/role/elb.
+# The ingress uses target-type ip, so the source the pod sees is the ALB itself.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-alb-api-gateway
+  namespace: tds-group-3
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 10.100.0.0/20
+        - ipBlock:
+            cidr: 10.100.16.0/20
