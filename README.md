@@ -1,8 +1,8 @@
 # UdeSA-X API Gateway
 
 Microservicio backend que rutea internamente los requests que llegan bajo `/api/*` hacia el
-servicio que corresponde (`users-api` o `posts-api`). No guarda estado ni tiene base de datos
-propia.
+servicio que corresponde (`users-api` o `posts-api`), y expone la salud de cada uno bajo
+`/api/health`. No guarda estado ni tiene base de datos propia.
 
 **Stack:** TypeScript, Bun, [Hono](https://hono.dev/) con su Proxy Helper. Gestión de
 dependencias con Bun, testing con Vitest, linting con ESLint + Prettier.
@@ -23,14 +23,15 @@ docker compose -f docker/docker-compose.dev.yml up --build
 Requiere `USERS_API_URL` y `POSTS_API_URL` apuntando a donde estén corriendo esos dos servicios.
 Por default asume que corren en el host con sus propios `docker-compose.dev.yml`
 (`users-api` en `8000`, `posts-api` en `8001`); este servicio usa `8002`. Sin esas dos variables,
-cualquier request a `/api/*` responde con error - `/healthcheck` y `/livez` no las necesitan.
+cualquier request a `/api/*` responde con error - `/healthcheck`, `/livez` y
+`/api/health/api-gateway` no las necesitan.
 
 ```bash
 curl http://localhost:8002/healthcheck
 ```
 
-Responde `200` con `{"status": "ok"}`. A diferencia de los demás servicios, no verifica ninguna
-dependencia porque no tiene ninguna propia.
+Responde `200` con `status: "ok"` y la `version` de `package.json`. A diferencia de los demás
+servicios, no verifica ninguna dependencia porque no tiene ninguna propia.
 
 ## Ruteo
 
@@ -42,6 +43,25 @@ dependencia porque no tiene ninguna propia.
 Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
 el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva
 el prefijo `/api`, la query y el encabezado de autorización. Las URLs base no llevan `/api`.
+
+### Salud de los servicios
+
+Los `/healthcheck` de cada servicio viven fuera de `/api`, porque los usan las sondas de
+Kubernetes y el ALB, así que desde afuera del cluster no se llega a ellos. Para que el
+backoffice pueda mostrar el estado de cada servicio, esta es la única ruta que el gateway no
+reenvía tal cual, sino que la traduce:
+
+| Path                      | Hace                                           |
+| ------------------------- | ---------------------------------------------- |
+| `/api/health/users-api`   | `GET` al `/healthcheck` de `users-api`         |
+| `/api/health/posts-api`   | `GET` al `/healthcheck` de `posts-api`         |
+| `/api/health/api-gateway` | Responde él mismo, igual que su `/healthcheck` |
+
+La respuesta lleva solo `status` y `version`, con el mismo código que dio el servicio. El
+detalle de las dependencias no sale del cluster, porque puede traer el texto de un error de
+conexión y esta ruta es pública. Si el servicio no contesta en 5 segundos o no se puede
+conectar, responde `503` con `{"status": "down"}`. Un servicio que no está en la lista da
+`404`. La lista vive en `src/routing.ts`, junto a la tabla de ruteo.
 
 ## Configuración
 
@@ -115,12 +135,12 @@ requests.
 ```text
 src/
 ├── index.ts    # entrypoint: arranca el servidor de Bun con la app de Hono
-├── app.ts      # la app de Hono: /healthcheck y el proxy hacia /api/*
-├── routing.ts  # tabla de prefijo -> backend
+├── app.ts      # la app de Hono: /healthcheck, /api/health/* y el proxy hacia /api/*
+├── routing.ts  # tabla de prefijo -> backend y servicios con salud expuesta
 └── config.ts   # configuración leída del entorno
 tests/
 ├── routing.test.ts  # tabla de ruteo, sin dependencias externas
-└── app.test.ts      # /healthcheck y 404, con la app en memoria
+└── app.test.ts      # salud, 404 y proxy, contra servidores HTTP en loopback
 docker/
 ├── Dockerfile
 └── docker-compose.dev.yml
