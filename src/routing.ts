@@ -10,6 +10,7 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/posts', 'postsApiUrl'],
   ['/api/feed', 'postsApiUrl'],
   ['/api/blocks', 'postsApiUrl'],
+  ['/api/reports', 'postsApiUrl'],
 ];
 
 /** Returns the backend base URL for a request path, or undefined if unmatched. */
