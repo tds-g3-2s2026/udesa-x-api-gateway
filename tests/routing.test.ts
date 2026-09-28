@@ -30,6 +30,20 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/follow-requests/42/approve', config)).toBe(config.postsApiUrl);
   });
 
+  it('routes posts and a single post to posts-api', () => {
+    expect(resolveBackend('/api/posts', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/posts/42', config)).toBe(config.postsApiUrl);
+  });
+
+  it('routes the feed and its next pages to posts-api', () => {
+    expect(resolveBackend('/api/feed', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/feed?cursor=abc', config)).toBe(config.postsApiUrl);
+  });
+
+  it('routes the blocked accounts list to posts-api', () => {
+    expect(resolveBackend('/api/blocks', config)).toBe(config.postsApiUrl);
+  });
+
   it('returns undefined for an unmatched path', () => {
     expect(resolveBackend('/api/unknown', config)).toBeUndefined();
   });
