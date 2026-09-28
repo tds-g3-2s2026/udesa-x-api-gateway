@@ -34,10 +34,10 @@ dependencia porque no tiene ninguna propia.
 
 ## Ruteo
 
-| Prefijo                              | Va a        |
-| ------------------------------------ | ----------- |
-| `/api/auth`, `/api/me`, `/api/admin` | `users-api` |
-| `/api/users`, `/api/follow-requests` | `posts-api` |
+| Prefijo                                                                        | Va a        |
+| ------------------------------------------------------------------------------ | ----------- |
+| `/api/auth`, `/api/me`, `/api/admin`                                           | `users-api` |
+| `/api/users`, `/api/follow-requests`, `/api/posts`, `/api/feed`, `/api/blocks` | `posts-api` |
 
 Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
 el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva
