@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { proxy } from 'hono/proxy';
 
+import { version } from '../package.json';
 import { loadConfig } from './config';
 import { resolveBackend } from './routing';
 
@@ -9,7 +10,7 @@ export function createApp() {
 
   app.get('/healthcheck', (c) => {
     // No dependency to check: this service holds no state.
-    return c.json({ status: 'ok' });
+    return c.json({ status: 'ok', version });
   });
 
   app.get('/livez', (c) => c.json({ status: 'ok' }));

@@ -3,6 +3,8 @@ import type { AddressInfo } from 'node:net';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { version } from '../package.json';
+
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.resetModules();
@@ -14,7 +16,7 @@ describe('GET /healthcheck', () => {
     const res = await app.request('/healthcheck');
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ status: 'ok' });
+    expect(await res.json()).toEqual({ status: 'ok', version });
   });
 });
 
