@@ -44,6 +44,14 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/blocks', config)).toBe(config.postsApiUrl);
   });
 
+  it('routes reports to posts-api', () => {
+    expect(resolveBackend('/api/reports', config)).toBe(config.postsApiUrl);
+  });
+
+  it('never routes the internal paths of the services', () => {
+    expect(resolveBackend('/internal/users/42/review', config)).toBeUndefined();
+  });
+
   it('returns undefined for an unmatched path', () => {
     expect(resolveBackend('/api/unknown', config)).toBeUndefined();
   });
