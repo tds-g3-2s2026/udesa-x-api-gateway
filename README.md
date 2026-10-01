@@ -35,14 +35,16 @@ servicios, no verifica ninguna dependencia porque no tiene ninguna propia.
 
 ## Ruteo
 
-| Prefijo                                                                        | Va a        |
-| ------------------------------------------------------------------------------ | ----------- |
-| `/api/auth`, `/api/me`, `/api/admin`                                           | `users-api` |
-| `/api/users`, `/api/follow-requests`, `/api/posts`, `/api/feed`, `/api/blocks` | `posts-api` |
+| Prefijo                                                                                        | Va a        |
+| ---------------------------------------------------------------------------------------------- | ----------- |
+| `/api/auth`, `/api/me`, `/api/admin`                                                           | `users-api` |
+| `/api/users`, `/api/follow-requests`, `/api/posts`, `/api/feed`, `/api/blocks`, `/api/reports` | `posts-api` |
 
 Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
 el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva
 el prefijo `/api`, la query y el encabezado de autorización. Las URLs base no llevan `/api`.
+Las rutas internas de los servicios, como `/internal/users/{id}/review` de `users-api`
+(ADR-011), quedan fuera de `/api` a propósito: el gateway nunca las expone.
 
 ### Salud de los servicios
 
