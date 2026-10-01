@@ -4,7 +4,9 @@
 
 Ruteo interno de requests hacia los microservicios backend (`users-api`, `posts-api`). Recibe
 todo lo que entra bajo `/api/*` y lo reenvía al servicio que corresponda, según la tabla en
-`src/routing.ts`. No tiene épica ni historia de usuario propia en el catálogo de la consigna:
+`src/routing.ts`. La única ruta que no reenvía tal cual es `/api/health/<servicio>`: la traduce
+al `/healthcheck` del servicio, que vive fuera de `/api`, para que el backoffice pueda leer el
+estado de cada uno. No tiene épica ni historia de usuario propia en el catálogo de la consigna:
 nace de `#48` en `udesa-x-platform`, como pieza de infraestructura interna detrás del `Ingress`
 compartido del cluster (`#44`, `#45`).
 
@@ -24,7 +26,7 @@ en `#48`.
 
 ```bash
 bun install
-bun run test           # tabla de ruteo y /healthcheck, sin red
+bun run test           # ruteo, salud y proxy contra servidores HTTP locales
 bun run lint            # ESLint + Prettier
 bun run build           # tsc --noEmit
 ```
@@ -32,13 +34,14 @@ bun run build           # tsc --noEmit
 ## Arquitectura y particularidades locales
 
 - Todo el código vive en módulos sueltos (`app.ts`, `routing.ts`, `config.ts`, `index.ts`): no
-  hay capas todavía porque no hay lógica de negocio que separar, solo reenvío de requests.
+  hay capas todavía porque no hay lógica de negocio que separar, solo reenvío de requests y la
+  lectura de salud de cada servicio.
 - La tabla de ruteo en `routing.ts` tiene que mantenerse igual a la de `k8s/ingress.yaml` en
   `udesa-x-platform` (issue `#45`) mientras el `Ingress` siga ruteando directo a cada servicio.
   El objetivo es que, una vez desplegado este servicio, el `Ingress` pase a mandar todo `/api`
   para acá.
 - `USERS_API_URL` y `POSTS_API_URL` no tienen default: sin las dos, cualquier request a `/api/*`
-  responde con un error. `/healthcheck` no las necesita.
+  responde con un error. `/healthcheck` y `/api/health/api-gateway` no las necesitan.
 - Documentación general del sistema: consultar `../udesa-x-platform/docs/` (`ARQUITECTURA.md`,
   `CONVENCIONES.md`, `PLANIFICACION.md`).
 

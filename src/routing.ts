@@ -13,6 +13,12 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/reports', 'postsApiUrl'],
 ];
 
+// Backends whose health is readable from outside the cluster as /api/health/<name>.
+export const HEALTH_TARGETS = new Map<string, keyof BackendConfig>([
+  ['users-api', 'usersApiUrl'],
+  ['posts-api', 'postsApiUrl'],
+]);
+
 /** Returns the backend base URL for a request path, or undefined if unmatched. */
 export function resolveBackend(path: string, config: BackendConfig): string | undefined {
   for (const [prefix, backend] of ROUTE_PREFIXES) {

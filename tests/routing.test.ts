@@ -44,6 +44,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/blocks', config)).toBe(config.postsApiUrl);
   });
 
+  it('leaves the health paths to their own route instead of forwarding them', () => {
+    expect(resolveBackend('/api/health/users-api', config)).toBeUndefined();
+    expect(resolveBackend('/api/health/posts-api', config)).toBeUndefined();
+  });
+
   it('routes reports to posts-api', () => {
     expect(resolveBackend('/api/reports', config)).toBe(config.postsApiUrl);
   });
