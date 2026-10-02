@@ -15,7 +15,7 @@ jobs:
 
   # Only a commit on main that passed CI reaches the cluster. The pipeline and
   # what it applies are documented in udesa-x-platform, "Despliegue continuo".
-  # No Secret and no database, so no secretos and no migracion.
+  # The only secret is the telemetry token. No database, so no migracion.
   deploy:
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -26,3 +26,4 @@ jobs:
       id-token: write
     with:
       servicio: api-gateway
+      secretos: OTEL_EXPORTER_OTLP_HEADERS

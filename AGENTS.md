@@ -33,9 +33,9 @@ bun run build           # tsc --noEmit
 
 ## Arquitectura y particularidades locales
 
-- Todo el código vive en módulos sueltos (`app.ts`, `routing.ts`, `config.ts`, `index.ts`): no
-  hay capas todavía porque no hay lógica de negocio que separar, solo reenvío de requests y la
-  lectura de salud de cada servicio.
+- Todo el código vive en módulos sueltos (`app.ts`, `routing.ts`, `config.ts`, `telemetry.ts`,
+  `index.ts`): no hay capas todavía porque no hay lógica de negocio que separar, solo reenvío de
+  requests y la lectura de salud de cada servicio.
 - La tabla de ruteo en `routing.ts` tiene que mantenerse igual a la de `k8s/ingress.yaml` en
   `udesa-x-platform` (issue `#45`) mientras el `Ingress` siga ruteando directo a cada servicio.
   El objetivo es que, una vez desplegado este servicio, el `Ingress` pase a mandar todo `/api`

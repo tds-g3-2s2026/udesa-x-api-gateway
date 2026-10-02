@@ -7,3 +7,5 @@ data:
   PORT: '8000'
   USERS_API_URL: 'http://users-api'
   POSTS_API_URL: 'http://posts-api'
+  # Logs y trazas a Grafana Cloud. El token va en el Secret.
+  OTEL_EXPORTER_OTLP_ENDPOINT: 'https://otlp-gateway-prod-sa-east-1.grafana.net/otlp'
