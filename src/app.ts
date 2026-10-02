@@ -1,3 +1,4 @@
+import { context, propagation } from '@opentelemetry/api';
 import { Hono, type Context } from 'hono';
 import { proxy } from 'hono/proxy';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
@@ -5,6 +6,7 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { version } from '../package.json';
 import { loadConfig } from './config';
 import { HEALTH_TARGETS, resolveBackend } from './routing';
+import { requestTelemetry } from './telemetry';
 
 // Past this a backend counts as down; the backoffice gives up at the same mark.
 const HEALTH_TIMEOUT_MS = 5000;
@@ -35,6 +37,8 @@ async function readHealth(url: string): Promise<HealthSummary> {
 
 export function createApp() {
   const app = new Hono();
+
+  app.use(requestTelemetry);
 
   // No dependency to check: this service holds no state.
   const health = (c: Context) => c.json({ status: 'ok', version });
@@ -68,13 +72,16 @@ export function createApp() {
       return c.text('no route configured for this path', 404);
     }
 
+    const headers: Record<string, string | undefined> = {
+      ...c.req.header(),
+      // Host belongs to this gateway, not to the backend's own address.
+      host: undefined,
+    };
+    // Replaces the caller's traceparent with one whose parent is the gateway's span.
+    propagation.inject(context.active(), headers);
     const upstream = await proxy(`${backendUrl}${c.req.path}${new URL(c.req.url).search}`, {
       ...c.req,
-      headers: {
-        ...c.req.header(),
-        // Host belongs to this gateway, not to the backend's own address.
-        host: undefined,
-      },
+      headers,
     });
     // Recomputed by the runtime from the body it actually sends.
     upstream.headers.delete('content-length');
