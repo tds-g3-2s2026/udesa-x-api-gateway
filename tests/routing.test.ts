@@ -21,6 +21,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/admin/reports', config)).toBe('http://users-api:8000');
   });
 
+  it('routes the admin post paths to posts-api, ahead of the rest of /api/admin', () => {
+    expect(resolveBackend('/api/admin/posts/metrics', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/admin/metrics', config)).toBe(config.usersApiUrl);
+  });
+
   it('routes /api/users to posts-api', () => {
     expect(resolveBackend('/api/users/42', config)).toBe('http://posts-api:8000');
   });
