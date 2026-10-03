@@ -1,9 +1,11 @@
 import type { BackendConfig } from './config';
 
 // The shared Ingress sends all of /api here. Backend routing lives only here.
+// First match wins, so a narrower prefix goes before the one that contains it.
 const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/auth', 'usersApiUrl'],
   ['/api/me', 'usersApiUrl'],
+  ['/api/admin/posts', 'postsApiUrl'],
   ['/api/admin', 'usersApiUrl'],
   ['/api/users', 'postsApiUrl'],
   ['/api/follow-requests', 'postsApiUrl'],
