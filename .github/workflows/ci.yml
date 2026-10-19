@@ -5,7 +5,7 @@ on:
     branches: [main]
 jobs:
   ci:
-    uses: tds-g3-2s2026/udesa-x-platform/.github/workflows/ci-node.yml@main
+    uses: tds-g3-2s2026/udesa-x-platform/.github/workflows/ci-node.yml@chore-ci-node-mongodb-rabbitmq
     secrets: inherit
     with:
       # This service deploys a container, so the image gets built and checked.
