@@ -1,6 +1,7 @@
 export interface BackendConfig {
   usersApiUrl: string;
   postsApiUrl: string;
+  notificationsApiUrl: string;
 }
 
 // No defaults on purpose: a missing backend URL stops the request from
@@ -9,8 +10,9 @@ export interface BackendConfig {
 export function loadConfig(env: Record<string, string | undefined> = process.env): BackendConfig {
   const usersApiUrl = env.USERS_API_URL;
   const postsApiUrl = env.POSTS_API_URL;
-  if (!usersApiUrl || !postsApiUrl) {
-    throw new Error('USERS_API_URL and POSTS_API_URL must both be set');
+  const notificationsApiUrl = env.NOTIFICATIONS_API_URL;
+  if (!usersApiUrl || !postsApiUrl || !notificationsApiUrl) {
+    throw new Error('USERS_API_URL, POSTS_API_URL and NOTIFICATIONS_API_URL must all be set');
   }
-  return { usersApiUrl, postsApiUrl };
+  return { usersApiUrl, postsApiUrl, notificationsApiUrl };
 }

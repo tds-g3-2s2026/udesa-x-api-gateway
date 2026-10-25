@@ -1,9 +1,15 @@
 import { createServer, type RequestListener } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { version } from '../package.json';
+
+// Every backend URL is required. These tests only care about the other two,
+// so this one is always set.
+beforeEach(() => {
+  vi.stubEnv('NOTIFICATIONS_API_URL', 'http://notifications-api:8000');
+});
 
 afterEach(() => {
   vi.unstubAllEnvs();

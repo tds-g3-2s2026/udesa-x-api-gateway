@@ -2,7 +2,8 @@
 
 <!-- INICIO BLOQUE PROPIO - completado en cada servicio -->
 
-Ruteo interno de requests hacia los microservicios backend (`users-api`, `posts-api`). Recibe
+Ruteo interno de requests hacia los microservicios backend (`users-api`, `posts-api`,
+`notifications-api`). Recibe
 todo lo que entra bajo `/api/*` y lo reenvía al servicio que corresponda, según la tabla en
 `src/routing.ts`. La única ruta que no reenvía tal cual es `/api/health/<servicio>`: la traduce
 al `/healthcheck` del servicio, que vive fuera de `/api`, para que el backoffice pueda leer el
@@ -40,8 +41,9 @@ bun run build           # tsc --noEmit
   `udesa-x-platform` (issue `#45`) mientras el `Ingress` siga ruteando directo a cada servicio.
   El objetivo es que, una vez desplegado este servicio, el `Ingress` pase a mandar todo `/api`
   para acá.
-- `USERS_API_URL` y `POSTS_API_URL` no tienen default: sin las dos, cualquier request a `/api/*`
-  responde con un error. `/healthcheck` y `/api/health/api-gateway` no las necesitan.
+- `USERS_API_URL`, `POSTS_API_URL` y `NOTIFICATIONS_API_URL` no tienen default: sin alguna,
+  cualquier request a `/api/*` responde con un error. `/healthcheck` y `/api/health/api-gateway`
+  no las necesitan.
 - Documentación general del sistema: consultar `../udesa-x-platform/docs/` (`ARQUITECTURA.md`,
   `CONVENCIONES.md`, `PLANIFICACION.md`).
 

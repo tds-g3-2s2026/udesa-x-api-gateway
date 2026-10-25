@@ -13,6 +13,7 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/feed', 'postsApiUrl'],
   ['/api/blocks', 'postsApiUrl'],
   ['/api/reports', 'postsApiUrl'],
+  ['/api/notifications', 'notificationsApiUrl'],
 ];
 
 // Backends whose health is readable from outside the cluster as /api/health/<name>.
