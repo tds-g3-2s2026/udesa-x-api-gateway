@@ -12,10 +12,12 @@ services:
       - '8002:8000'
     environment:
       # No backing database or cache: this service only forwards requests.
-      # Defaults match users-api (host 8000) and posts-api (host 8001) run
-      # with their own docker-compose.dev.yml on the same machine.
+      # Defaults match users-api (host 8000), posts-api (host 8001) and
+      # notifications-api (host 8003) run with their own docker-compose.dev.yml
+      # on the same machine.
       USERS_API_URL: http://host.docker.internal:8000
       POSTS_API_URL: http://host.docker.internal:8001
+      NOTIFICATIONS_API_URL: http://host.docker.internal:8003
 
   # No source volume on purpose: mounting it would replace what the image
   # carries and stop testing the real artifact.
