@@ -6,6 +6,7 @@ import { resolveBackend } from '../src/routing';
 const config: BackendConfig = {
   usersApiUrl: 'http://users-api:8000',
   postsApiUrl: 'http://posts-api:8000',
+  notificationsApiUrl: 'http://notifications-api:8000',
 };
 
 describe('resolveBackend', () => {
@@ -52,6 +53,13 @@ describe('resolveBackend', () => {
   it('leaves the health paths to their own route instead of forwarding them', () => {
     expect(resolveBackend('/api/health/users-api', config)).toBeUndefined();
     expect(resolveBackend('/api/health/posts-api', config)).toBeUndefined();
+  });
+
+  it('routes the notifications paths to notifications-api', () => {
+    expect(resolveBackend('/api/notifications/device-tokens', config)).toBe(
+      config.notificationsApiUrl
+    );
+    expect(resolveBackend('/api/notifications', config)).toBe(config.notificationsApiUrl);
   });
 
   it('routes reports to posts-api', () => {

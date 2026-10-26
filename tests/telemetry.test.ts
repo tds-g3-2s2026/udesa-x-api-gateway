@@ -31,6 +31,7 @@ beforeAll(async () => {
   const { port } = backend.address() as AddressInfo;
   vi.stubEnv('USERS_API_URL', `http://127.0.0.1:${port}`);
   vi.stubEnv('POSTS_API_URL', `http://127.0.0.1:${port}`);
+  vi.stubEnv('NOTIFICATIONS_API_URL', `http://127.0.0.1:${port}`);
 });
 
 afterAll(async () => {

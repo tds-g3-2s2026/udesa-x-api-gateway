@@ -1,8 +1,8 @@
 # UdeSA-X API Gateway
 
 Microservicio backend que rutea internamente los requests que llegan bajo `/api/*` hacia el
-servicio que corresponde (`users-api` o `posts-api`), y expone la salud de cada uno bajo
-`/api/health`. No guarda estado ni tiene base de datos propia.
+servicio que corresponde (`users-api`, `posts-api` o `notifications-api`), y expone la salud de
+`users-api` y `posts-api` bajo `/api/health`. No guarda estado ni tiene base de datos propia.
 
 **Stack:** TypeScript, Bun, [Hono](https://hono.dev/) con su Proxy Helper. Gestión de
 dependencias con Bun, testing con Vitest, linting con ESLint + Prettier.
@@ -20,11 +20,11 @@ Python (como `users-api`/`posts-api`) porque la consigna exige que el backend no
 docker compose -f docker/docker-compose.dev.yml up --build
 ```
 
-Requiere `USERS_API_URL` y `POSTS_API_URL` apuntando a donde estén corriendo esos dos servicios.
-Por default asume que corren en el host con sus propios `docker-compose.dev.yml`
-(`users-api` en `8000`, `posts-api` en `8001`); este servicio usa `8002`. Sin esas dos variables,
-cualquier request a `/api/*` responde con error - `/healthcheck`, `/livez` y
-`/api/health/api-gateway` no las necesitan.
+Requiere `USERS_API_URL`, `POSTS_API_URL` y `NOTIFICATIONS_API_URL` apuntando a donde estén
+corriendo esos servicios. Por default asume que corren en el host con sus propios
+`docker-compose.dev.yml` (`users-api` en `8000`, `posts-api` en `8001`, `notifications-api` en
+`8003`); este servicio usa `8002`. Sin alguna de esas variables, cualquier request a `/api/*`
+responde con error - `/healthcheck`, `/livez` y `/api/health/api-gateway` no las necesitan.
 
 ```bash
 curl http://localhost:8002/healthcheck
@@ -35,10 +35,11 @@ servicios, no verifica ninguna dependencia porque no tiene ninguna propia.
 
 ## Ruteo
 
-| Prefijo                                                                                                            | Va a        |
-| ------------------------------------------------------------------------------------------------------------------ | ----------- |
-| `/api/auth`, `/api/me`, `/api/admin` (salvo `/api/admin/posts`)                                                    | `users-api` |
-| `/api/users`, `/api/follow-requests`, `/api/posts`, `/api/feed`, `/api/blocks`, `/api/reports`, `/api/admin/posts` | `posts-api` |
+| Prefijo                                                                                                            | Va a                |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| `/api/auth`, `/api/me`, `/api/admin` (salvo `/api/admin/posts`)                                                    | `users-api`         |
+| `/api/users`, `/api/follow-requests`, `/api/posts`, `/api/feed`, `/api/blocks`, `/api/reports`, `/api/admin/posts` | `posts-api`         |
+| `/api/notifications`                                                                                               | `notifications-api` |
 
 Cualquier otro path bajo `/api` responde `404`. La tabla vive solamente en `src/routing.ts`:
 el Ingress de plataforma envía todo `/api` al Service `api-gateway:80`. El proxy conserva
@@ -67,11 +68,12 @@ conectar, responde `503` con `{"status": "down"}`. Un servicio que no está en l
 
 ## Configuración
 
-| Variable        | Default                  | Para qué                         |
-| --------------- | ------------------------ | -------------------------------- |
-| `USERS_API_URL` | sin definir, obligatoria | Base URL de `users-api`          |
-| `POSTS_API_URL` | sin definir, obligatoria | Base URL de `posts-api`          |
-| `PORT`          | `8000`                   | Puerto donde escucha el servicio |
+| Variable                | Default                  | Para qué                         |
+| ----------------------- | ------------------------ | -------------------------------- |
+| `USERS_API_URL`         | sin definir, obligatoria | Base URL de `users-api`          |
+| `POSTS_API_URL`         | sin definir, obligatoria | Base URL de `posts-api`          |
+| `NOTIFICATIONS_API_URL` | sin definir, obligatoria | Base URL de `notifications-api`  |
+| `PORT`                  | `8000`                   | Puerto donde escucha el servicio |
 
 ## Despliegue en Kubernetes
 
@@ -82,7 +84,10 @@ un Secret vacío: este servicio no consume credenciales. Nunca versionar un even
 - El pipeline sustituye `${ECR_IMAGE}` por la imagen publicada en ECR, referenciada por
   digest. Kubernetes no expande variables.
 - El Service expone `80` hacia el puerto nombrado `http` del contenedor (`8000`).
-- `USERS_API_URL=http://users-api` y `POSTS_API_URL=http://posts-api` usan DNS del namespace.
+- `USERS_API_URL=http://users-api`, `POSTS_API_URL=http://posts-api` y
+  `NOTIFICATIONS_API_URL=http://notifications-api` usan DNS del namespace. `notifications-api`
+  todavía no se despliega: hasta que exista su Service, `/api/notifications` responde `500` y el
+  resto del gateway sigue igual.
 - Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
 - La NetworkPolicy le abre el gateway al ALB, desde sus dos subredes. El resto del namespace
   solo acepta tráfico interno por la política de `udesa-x-platform`. Hoy ninguna de las dos
