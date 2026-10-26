@@ -9,6 +9,12 @@ const config: BackendConfig = {
 };
 
 describe('resolveBackend', () => {
+  it('E2-H10.CA1 routes each search to the service owning its data', () => {
+    expect(resolveBackend('/api/search/posts', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/search/users', config)).toBe(config.usersApiUrl);
+    expect(resolveBackend('/internal/blocks/check', config)).toBeUndefined();
+  });
+
   it('routes /api/auth to users-api', () => {
     expect(resolveBackend('/api/auth/login', config)).toBe('http://users-api:8000');
   });
