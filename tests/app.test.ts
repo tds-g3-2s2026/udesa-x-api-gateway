@@ -198,3 +198,27 @@ describe('GET /api/health/:service', () => {
     }
   });
 });
+
+describe('search proxy', () => {
+  it.each(['posts', 'users'])(
+    'E2-H10.CA4 preserves query, cursor, auth and errors for %s',
+    async (kind) => {
+      const backend = await serve((req, res) => {
+        res.writeHead(503, { 'content-type': 'application/problem+json' });
+        res.end(JSON.stringify({ path: req.url, authorization: req.headers.authorization }));
+      });
+      try {
+        vi.stubEnv('USERS_API_URL', kind === 'users' ? backend.url : 'http://127.0.0.1:1');
+        vi.stubEnv('POSTS_API_URL', kind === 'posts' ? backend.url : 'http://127.0.0.1:1');
+        const { app } = await import('../src/app');
+        const path = `/api/search/${kind}?q=%40alumno&cursor=a%2Fb`;
+        const response = await app.request(path, { headers: { Authorization: 'Bearer viewer' } });
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ path, authorization: 'Bearer viewer' });
+        expect((await app.request('/internal/blocks/check')).status).toBe(404);
+      } finally {
+        await backend.close();
+      }
+    }
+  );
+});
