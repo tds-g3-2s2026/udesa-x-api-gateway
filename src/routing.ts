@@ -14,6 +14,7 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
   ['/api/posts', 'postsApiUrl'],
   ['/api/feed', 'postsApiUrl'],
   ['/api/blocks', 'postsApiUrl'],
+  ['/api/mutes', 'postsApiUrl'],
   ['/api/reports', 'postsApiUrl'],
   ['/api/notifications', 'notificationsApiUrl'],
 ];
