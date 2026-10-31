@@ -56,6 +56,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/blocks', config)).toBe(config.postsApiUrl);
   });
 
+  it('routes the muted accounts list and its next pages to posts-api', () => {
+    expect(resolveBackend('/api/mutes', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/mutes?cursor=abc', config)).toBe(config.postsApiUrl);
+  });
+
   it('leaves the health paths to their own route instead of forwarding them', () => {
     expect(resolveBackend('/api/health/users-api', config)).toBeUndefined();
     expect(resolveBackend('/api/health/posts-api', config)).toBeUndefined();
