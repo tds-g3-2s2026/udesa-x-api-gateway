@@ -27,10 +27,11 @@ export const HEALTH_TARGETS = new Map<string, keyof BackendConfig>([
 
 /** Returns the backend base URL for a request path, or undefined if unmatched. */
 export function resolveBackend(path: string, config: BackendConfig): string | undefined {
-  for (const [prefix, backend] of ROUTE_PREFIXES) {
-    if (path.startsWith(prefix)) {
-      return config[backend];
-    }
-  }
-  return undefined;
+  const route = resolveRoute(path);
+  return route ? config[route[1]] : undefined;
+}
+
+/** The routing prefix and backend key matched by the proxy. */
+export function resolveRoute(path: string): [string, keyof BackendConfig] | undefined {
+  return ROUTE_PREFIXES.find(([prefix]) => path.startsWith(prefix));
 }

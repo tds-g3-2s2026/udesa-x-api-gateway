@@ -79,10 +79,15 @@ export function createApp() {
     };
     // Replaces the caller's traceparent with one whose parent is the gateway's span.
     propagation.inject(context.active(), headers);
-    const upstream = await proxy(`${backendUrl}${c.req.path}${new URL(c.req.url).search}`, {
-      ...c.req,
-      headers,
-    });
+    let upstream: Response;
+    try {
+      upstream = await proxy(`${backendUrl}${c.req.path}${new URL(c.req.url).search}`, {
+        ...c.req,
+        headers,
+      });
+    } catch {
+      return c.json({ error: 'backend-unavailable' }, 502);
+    }
     // Recomputed by the runtime from the body it actually sends.
     upstream.headers.delete('content-length');
     return upstream;
