@@ -1,4 +1,5 @@
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 
 import { app } from './app';
@@ -8,14 +9,22 @@ import { startTelemetry } from './telemetry';
 // and the rest of the OTEL_EXPORTER_OTLP_* variables, on their own.
 const telemetry = startTelemetry(
   process.env.OTEL_EXPORTER_OTLP_ENDPOINT
-    ? { spans: new OTLPTraceExporter(), logs: new OTLPLogExporter() }
+    ? {
+        spans: new OTLPTraceExporter(),
+        logs: new OTLPLogExporter(),
+        metrics: new OTLPMetricExporter(),
+      }
     : undefined
 );
 
 // Kubernetes sends SIGTERM before stopping the pod: the last batches go out
 // before the process exits.
 process.on('SIGTERM', async () => {
-  await Promise.all([telemetry?.tracerProvider.shutdown(), telemetry?.loggerProvider.shutdown()]);
+  await Promise.all([
+    telemetry?.tracerProvider.shutdown(),
+    telemetry?.loggerProvider.shutdown(),
+    telemetry?.meterProvider.shutdown(),
+  ]);
   process.exit(0);
 });
 

@@ -106,6 +106,24 @@ anterior. No toca el Ingress: lo aplica el docente, y el gateway tiene que estar
 de habilitar la entrada pública. Qué hace paso por paso está en el README de
 `udesa-x-platform`, sección "Despliegue continuo".
 
+## Métricas operativas
+
+La duración HTTP se registra en segundos y se agrupa por método, estado y prefijo de ruteo.
+Los flujos con objetivos de servicio llevan una clasificación acotada; en el feed se distingue
+la primera página de las siguientes sin guardar el cursor. Las rutas concretas, los parámetros
+y las identidades de usuarios no forman etiquetas de métricas. Los contadores de respuestas
+502 y 504 identifican el backend; una conexión rechazada devuelve 502 y conserva esa señal.
+
+Cada proceso tiene una identidad de instancia para mantener separados sus contadores al
+escalar. El SDK exporta periódicamente por OTLP/HTTP con protobuf solo cuando está configurado
+`OTEL_EXPORTER_OTLP_ENDPOINT`; reutiliza los encabezados estándar de autenticación y vacía
+lo pendiente al recibir SIGTERM. Las sondas de Kubernetes quedan excluidas.
+
+La versión del SDK JavaScript utilizada no incorpora exemplars a los datos exportados.
+Las mediciones conservan el contexto de traza, pero el salto desde una métrica hacia Tempo
+requiere un exemplar de un servicio que sí lo exporte. Las trazas y los logs del gateway
+mantienen su correlación por `trace_id`.
+
 ## Correr los tests
 
 ```bash
