@@ -61,6 +61,12 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/mutes?cursor=abc', config)).toBe(config.postsApiUrl);
   });
 
+  it('routes the lists, their members and their feed to posts-api', () => {
+    expect(resolveBackend('/api/lists', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/lists/42/members/7', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/lists/42/feed?cursor=abc', config)).toBe(config.postsApiUrl);
+  });
+
   it('leaves the health paths to their own route instead of forwarding them', () => {
     expect(resolveBackend('/api/health/users-api', config)).toBeUndefined();
     expect(resolveBackend('/api/health/posts-api', config)).toBeUndefined();
