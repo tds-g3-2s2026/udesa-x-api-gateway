@@ -43,7 +43,8 @@ bun run build           # tsc --noEmit
   para acá.
 - `USERS_API_URL`, `POSTS_API_URL` y `NOTIFICATIONS_API_URL` no tienen default: sin alguna,
   cualquier request a `/api/*` responde con un error. `/healthcheck` y `/api/health/api-gateway`
-  no las necesitan.
+  no las necesitan. `ASSISTANT_API_URL` es la excepción: opcional, sin ella `/api/assistant`
+  responde `404`.
 - Documentación general del sistema: consultar `../udesa-x-platform/docs/` (`ARQUITECTURA.md`,
   `CONVENCIONES.md`, `PLANIFICACION.md`).
 

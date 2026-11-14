@@ -73,6 +73,7 @@ conectar, responde `503` con `{"status": "down"}`. Un servicio que no está en l
 | `USERS_API_URL`         | sin definir, obligatoria | Base URL de `users-api`          |
 | `POSTS_API_URL`         | sin definir, obligatoria | Base URL de `posts-api`          |
 | `NOTIFICATIONS_API_URL` | sin definir, obligatoria | Base URL de `notifications-api`  |
+| `ASSISTANT_API_URL`     | sin definir, opcional    | Base URL de `assistant-api`      |
 | `PORT`                  | `8000`                   | Puerto donde escucha el servicio |
 
 ## Despliegue en Kubernetes
@@ -88,6 +89,8 @@ un Secret vacío: este servicio no consume credenciales. Nunca versionar un even
   `NOTIFICATIONS_API_URL=http://notifications-api` usan DNS del namespace. `notifications-api`
   todavía no se despliega: hasta que exista su Service, `/api/notifications` responde `500` y el
   resto del gateway sigue igual.
+- `ASSISTANT_API_URL=http://assistant-api` lleva `/api/assistant` al asistente por voz. Es la
+  única opcional: sin ella, `/api/assistant` responde `404` y el resto del gateway sigue igual.
 - Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
 - La NetworkPolicy le abre el gateway al ALB, desde sus dos subredes. El resto del namespace
   solo acepta tráfico interno por la política de `udesa-x-platform`. Hoy ninguna de las dos

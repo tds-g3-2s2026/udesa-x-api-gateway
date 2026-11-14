@@ -9,5 +9,7 @@ data:
   POSTS_API_URL: 'http://posts-api'
   # Todavía no desplegado: hasta que exista el Service, /api/notifications responde 500.
   NOTIFICATIONS_API_URL: 'http://notifications-api'
+  # El asistente por voz (AI-04). Hasta que exista su Service, /api/assistant responde 500.
+  ASSISTANT_API_URL: 'http://assistant-api'
   # Logs y trazas a Grafana Cloud. El token va en el Secret.
   OTEL_EXPORTER_OTLP_ENDPOINT: 'https://otlp-gateway-prod-sa-east-1.grafana.net/otlp'
