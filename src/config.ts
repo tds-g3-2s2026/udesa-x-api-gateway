@@ -2,6 +2,9 @@ export interface BackendConfig {
   usersApiUrl: string;
   postsApiUrl: string;
   notificationsApiUrl: string;
+  // Optional, unlike the rest: without it /api/assistant answers 404 and every
+  // other route keeps working. The voice assistant is an extra, not the core.
+  assistantApiUrl?: string;
 }
 
 // No defaults on purpose: a missing backend URL stops the request from
@@ -14,5 +17,6 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (!usersApiUrl || !postsApiUrl || !notificationsApiUrl) {
     throw new Error('USERS_API_URL, POSTS_API_URL and NOTIFICATIONS_API_URL must all be set');
   }
-  return { usersApiUrl, postsApiUrl, notificationsApiUrl };
+  const assistantApiUrl = env.ASSISTANT_API_URL || undefined;
+  return { usersApiUrl, postsApiUrl, notificationsApiUrl, assistantApiUrl };
 }

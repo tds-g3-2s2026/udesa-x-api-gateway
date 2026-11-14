@@ -17,6 +17,14 @@ describe('loadConfig', () => {
     });
   });
 
+  it('adds the assistant when ASSISTANT_API_URL is set, and leaves it out otherwise', () => {
+    expect(
+      loadConfig({ ...URLS, ASSISTANT_API_URL: 'http://assistant-api:8000' }).assistantApiUrl
+    ).toBe('http://assistant-api:8000');
+    expect(loadConfig(URLS).assistantApiUrl).toBeUndefined();
+    expect(loadConfig({ ...URLS, ASSISTANT_API_URL: '' }).assistantApiUrl).toBeUndefined();
+  });
+
   it.each(Object.keys(URLS))('throws when %s is missing', (name) => {
     expect(() => loadConfig({ ...URLS, [name]: undefined })).toThrow(
       'USERS_API_URL, POSTS_API_URL and NOTIFICATIONS_API_URL must all be set'

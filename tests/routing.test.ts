@@ -7,6 +7,7 @@ const config: BackendConfig = {
   usersApiUrl: 'http://users-api:8000',
   postsApiUrl: 'http://posts-api:8000',
   notificationsApiUrl: 'http://notifications-api:8000',
+  assistantApiUrl: 'http://assistant-api:8000',
 };
 
 describe('resolveBackend', () => {
@@ -77,6 +78,17 @@ describe('resolveBackend', () => {
       config.notificationsApiUrl
     );
     expect(resolveBackend('/api/notifications', config)).toBe(config.notificationsApiUrl);
+  });
+
+  it('AI-04 - routes /api/assistant to assistant-api', () => {
+    expect(resolveBackend('/api/assistant/turns', config)).toBe(config.assistantApiUrl);
+  });
+
+  it('leaves /api/assistant unrouted while assistant-api is not configured', () => {
+    const withoutAssistant = { ...config, assistantApiUrl: undefined };
+
+    expect(resolveBackend('/api/assistant/turns', withoutAssistant)).toBeUndefined();
+    expect(resolveBackend('/api/feed', withoutAssistant)).toBe(config.postsApiUrl);
   });
 
   it('routes reports to posts-api', () => {
