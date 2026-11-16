@@ -95,6 +95,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/reports', config)).toBe(config.postsApiUrl);
   });
 
+  it('routes the bookmarks and their next pages to posts-api', () => {
+    expect(resolveBackend('/api/bookmarks', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/bookmarks?cursor=abc', config)).toBe(config.postsApiUrl);
+  });
+
   it('never routes the internal paths of the services', () => {
     expect(resolveBackend('/internal/users/42/review', config)).toBeUndefined();
   });
