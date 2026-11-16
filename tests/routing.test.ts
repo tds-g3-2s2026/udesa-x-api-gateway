@@ -53,6 +53,11 @@ describe('resolveBackend', () => {
     expect(resolveBackend('/api/feed?cursor=abc', config)).toBe(config.postsApiUrl);
   });
 
+  it('E2-H11.CA2 routes /api/trending and its sub-paths to posts-api', () => {
+    expect(resolveBackend('/api/trending', config)).toBe(config.postsApiUrl);
+    expect(resolveBackend('/api/trending/anything', config)).toBe(config.postsApiUrl);
+  });
+
   it('routes the blocked accounts list to posts-api', () => {
     expect(resolveBackend('/api/blocks', config)).toBe(config.postsApiUrl);
   });
