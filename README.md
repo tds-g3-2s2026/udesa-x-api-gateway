@@ -86,9 +86,7 @@ un Secret vacío: este servicio no consume credenciales. Nunca versionar un even
   digest. Kubernetes no expande variables.
 - El Service expone `80` hacia el puerto nombrado `http` del contenedor (`8000`).
 - `USERS_API_URL=http://users-api`, `POSTS_API_URL=http://posts-api` y
-  `NOTIFICATIONS_API_URL=http://notifications-api` usan DNS del namespace. `notifications-api`
-  todavía no se despliega: hasta que exista su Service, `/api/notifications` responde `500` y el
-  resto del gateway sigue igual.
+  `NOTIFICATIONS_API_URL=http://notifications-api` usan DNS del namespace.
 - `ASSISTANT_API_URL=http://assistant-api` lleva `/api/assistant` al asistente por voz. Es la
   única opcional: sin ella, `/api/assistant` responde `404` y el resto del gateway sigue igual.
 - Una réplica pide `100m` / `128Mi` y tiene límites de `500m` / `512Mi`.
