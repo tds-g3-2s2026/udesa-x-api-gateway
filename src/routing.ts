@@ -27,6 +27,8 @@ const ROUTE_PREFIXES: Array<[prefix: string, backend: keyof BackendConfig]> = [
 export const HEALTH_TARGETS = new Map<string, keyof BackendConfig>([
   ['users-api', 'usersApiUrl'],
   ['posts-api', 'postsApiUrl'],
+  ['notifications-api', 'notificationsApiUrl'],
+  ['assistant-api', 'assistantApiUrl'],
 ]);
 
 /** Returns the backend base URL for a request path, or undefined if unmatched. */

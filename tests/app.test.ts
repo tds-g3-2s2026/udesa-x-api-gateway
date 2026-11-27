@@ -99,9 +99,44 @@ describe('GET /api/health/:service', () => {
     vi.stubEnv('POSTS_API_URL', 'http://posts-api:8000');
 
     const { app } = await import('../src/app');
-    const res = await app.request('/api/health/notifications-api');
+    const res = await app.request('/api/health/billing-api');
 
     expect(res.status).toBe(404);
+  });
+
+  it('reads the health of notifications-api and assistant-api too', async () => {
+    const backend = await serve((req, res) => {
+      res.writeHead(req.url === '/healthcheck' ? 200 : 404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', version: '1.6.0' }));
+    });
+
+    try {
+      vi.stubEnv('USERS_API_URL', 'http://users-api:8000');
+      vi.stubEnv('POSTS_API_URL', 'http://posts-api:8000');
+      vi.stubEnv('NOTIFICATIONS_API_URL', backend.url);
+      vi.stubEnv('ASSISTANT_API_URL', backend.url);
+
+      const { app } = await import('../src/app');
+      for (const service of ['notifications-api', 'assistant-api']) {
+        const res = await app.request(`/api/health/${service}`);
+        expect(res.status).toBe(200);
+        expect(await res.json()).toEqual({ status: 'ok', version: '1.6.0' });
+      }
+    } finally {
+      await backend.close();
+    }
+  });
+
+  it('reports assistant-api as down when its URL is not configured', async () => {
+    vi.stubEnv('USERS_API_URL', 'http://users-api:8000');
+    vi.stubEnv('POSTS_API_URL', 'http://posts-api:8000');
+    vi.stubEnv('ASSISTANT_API_URL', '');
+
+    const { app } = await import('../src/app');
+    const res = await app.request('/api/health/assistant-api');
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ status: 'down' });
   });
 
   it("reads the backend's /healthcheck and returns only its status and version", async () => {

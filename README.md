@@ -3,8 +3,8 @@
 [![Cobertura](https://codecov.io/gh/tds-g3-2s2026/udesa-x-api-gateway/branch/main/graph/badge.svg)](https://codecov.io/gh/tds-g3-2s2026/udesa-x-api-gateway)
 
 Microservicio backend que rutea internamente los requests que llegan bajo `/api/*` hacia el
-servicio que corresponde (`users-api`, `posts-api` o `notifications-api`), y expone la salud de
-`users-api` y `posts-api` bajo `/api/health`. No guarda estado ni tiene base de datos propia.
+servicio que corresponde (`users-api`, `posts-api`, `notifications-api` o `assistant-api`), y
+expone la salud de los cinco servicios bajo `/api/health`. No guarda estado ni tiene base de datos propia.
 
 **Stack:** TypeScript, Bun, [Hono](https://hono.dev/) con su Proxy Helper. Gestión de
 dependencias con Bun, testing con Vitest, linting con ESLint + Prettier.
@@ -56,16 +56,19 @@ Kubernetes y el ALB, así que desde afuera del cluster no se llega a ellos. Para
 backoffice pueda mostrar el estado de cada servicio, esta es la única ruta que el gateway no
 reenvía tal cual, sino que la traduce:
 
-| Path                      | Hace                                           |
-| ------------------------- | ---------------------------------------------- |
-| `/api/health/users-api`   | `GET` al `/healthcheck` de `users-api`         |
-| `/api/health/posts-api`   | `GET` al `/healthcheck` de `posts-api`         |
-| `/api/health/api-gateway` | Responde él mismo, igual que su `/healthcheck` |
+| Path                            | Hace                                           |
+| ------------------------------- | ---------------------------------------------- |
+| `/api/health/users-api`         | `GET` al `/healthcheck` de `users-api`         |
+| `/api/health/posts-api`         | `GET` al `/healthcheck` de `posts-api`         |
+| `/api/health/notifications-api` | `GET` al `/healthcheck` de `notifications-api` |
+| `/api/health/assistant-api`     | `GET` al `/healthcheck` de `assistant-api`     |
+| `/api/health/api-gateway`       | Responde él mismo, igual que su `/healthcheck` |
 
 La respuesta lleva solo `status` y `version`, con el mismo código que dio el servicio. El
 detalle de las dependencias no sale del cluster, porque puede traer el texto de un error de
 conexión y esta ruta es pública. Si el servicio no contesta en 5 segundos o no se puede
-conectar, responde `503` con `{"status": "down"}`. Un servicio que no está en la lista da
+conectar, responde `503` con `{"status": "down"}`, y lo mismo `assistant-api` si el gateway
+no tiene configurada su URL. Un servicio que no está en la lista da
 `404`. La lista vive en `src/routing.ts`, junto a la tabla de ruteo.
 
 ## Configuración
