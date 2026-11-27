@@ -76,6 +76,8 @@ describe('resolveBackend', () => {
   it('leaves the health paths to their own route instead of forwarding them', () => {
     expect(resolveBackend('/api/health/users-api', config)).toBeUndefined();
     expect(resolveBackend('/api/health/posts-api', config)).toBeUndefined();
+    expect(resolveBackend('/api/health/notifications-api', config)).toBeUndefined();
+    expect(resolveBackend('/api/health/assistant-api', config)).toBeUndefined();
   });
 
   it('routes the notifications paths to notifications-api', () => {

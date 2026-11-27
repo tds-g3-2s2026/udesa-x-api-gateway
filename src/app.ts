@@ -57,8 +57,14 @@ export function createApp() {
       return c.text('unknown service', 404);
     }
 
+    // assistant-api is optional: without its URL there is nothing to ask.
+    const baseUrl = loadConfig()[backend];
+    if (!baseUrl) {
+      return c.json({ status: 'down' }, 503);
+    }
+
     try {
-      const { body, code } = await readHealth(`${loadConfig()[backend]}/healthcheck`);
+      const { body, code } = await readHealth(`${baseUrl}/healthcheck`);
       return c.json(body, code);
     } catch {
       return c.json({ status: 'down' }, 503);
