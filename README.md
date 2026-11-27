@@ -1,5 +1,7 @@
 # UdeSA-X API Gateway
 
+[![Cobertura](https://codecov.io/gh/tds-g3-2s2026/udesa-x-api-gateway/branch/main/graph/badge.svg)](https://codecov.io/gh/tds-g3-2s2026/udesa-x-api-gateway)
+
 Microservicio backend que rutea internamente los requests que llegan bajo `/api/*` hacia el
 servicio que corresponde (`users-api`, `posts-api` o `notifications-api`), y expone la salud de
 `users-api` y `posts-api` bajo `/api/health`. No guarda estado ni tiene base de datos propia.
